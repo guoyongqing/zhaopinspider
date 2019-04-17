@@ -1,4 +1,4 @@
-# -*-coding:utf8-*-
+#!/usr/bin/python
 
 import requests
 import json
@@ -20,6 +20,7 @@ def datetime_to_timestamp_in_milliseconds(d):
 reload(sys)
 
 
+# 加载User-Agent
 def load_user_agents(uafile):
     uas = []
     with open(uafile, 'rb') as uaf:
@@ -32,18 +33,19 @@ def load_user_agents(uafile):
 
 uas = load_user_agents("user_agents.txt")
 
+# 请求头（模拟浏览器访问）
 head = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1'
     'X-Requested-With': 'XMLHttpRequest',
-    'Referer': 'http://space.bilibili.com/45388',
-    'Origin': 'http://space.bilibili.com',
-    'Host': 'space.bilibili.com',
+    'Referer': 'https://i.zhaopin.com/resume',
+    'Origin': 'https://i.zhaopin.com',
+    'Host': 'i.zhaopin.com',
     'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0',
-    'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4',
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Accept': 'application/json, text/plain, */*',
 }
 
-# Please replace your own proxies.
+# 代理
 proxies = {
     'http': 'http://120.26.110.59:8080',
     'http': 'http://120.52.32.46:80',
@@ -56,7 +58,7 @@ urls = []
 
 # Please change the range data by yourself.
 for m in range(5214, 5215):
-    for i in range(m * 100, (m + 1) * 100):
+    for i in range(m * 10, (m + 1) * 10):
         url = 'https://space.bilibili.com/' + str(i)
         urls.append(url)
 
