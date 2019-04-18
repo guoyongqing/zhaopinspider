@@ -3,9 +3,10 @@
 import requests
 import random
 import time
-from multiprocessing.dummy import Pool as ThreadPool
 from bs4 import BeautifulSoup
 import re
+import numpy as np
+import write_excel
 
 
 # 登陆URL
@@ -64,8 +65,6 @@ proxies = {
     'http': '119.180.179.71:8060',
 }
 
-time1 = time.time()
-
 
 # 登陆
 def login(baseurl,username,password):
@@ -83,52 +82,75 @@ def login(baseurl,username,password):
     print(r.text + '\n\n********************************************************')
 
 
-# 抓取个人主页
-def get_source(url):
-    r = requests \
-        .session() \
-        .get(url,
-                headers=query_head,
-                proxies=proxies
-                ) \
-        .text
-    find_interested_groups(r)
+# 执行爬数据
+def do_spider():
+    index = 0
+    # 失败重试次数（最大设置为10）
+    try_times = 0
+    list = []
+    while (index < len(urls)):
+        url = urls[index]
+        # 模拟等待延时
+        time.sleep(np.random.rand() * 5)
+        try:
+            r = requests \
+                .session() \
+                .get(url,
+                     headers=query_head,
+                     proxies=proxies,
+                     timeout=30
+                     ) \
+                .text
+        except:
+            continue
+
+        # 一条用户信息
+        userid = url[-8]
+        groups = []
+        soup = BeautifulSoup(r, 'lxml')
+        print(soup.prettify() + '\n\n********************************************************')
+        # 找出文本内容包含'我常去的小组'的所有h2标签
+        groups_h2 = soup.find('h2', string=re.compile('常去的小组'))
+        try_times += 1
+        if groups_h2 == None and try_times < 10:
+            continue
+        elif groups_h2 == None or len(groups_h2) <= 1:
+            break
+
+        nickname = soup.title.string
+        # 找到其后所有的兄弟dl节点
+        dl_siblings = groups_h2.find_next_siblings()
+        for dl in dl_siblings:
+            dd = dl.dd
+            a = dd.a
+            groupname = a.string.strip()[:-1]
+            link = a.get('href')
+            group = [userid, nickname, groupname, link]
+            groups.append(group)
+        print('groups : ' + groups + '\n\n********************************************************')
+        index += 1
+        list.append(groups)
+    return list
 
 
-groups = []
-
-
-# 查找"我常去的小组"
-def find_interested_groups(html_doc):
-    soup = BeautifulSoup(html_doc,'lxml')
-    print(soup.prettify() + '\n\n********************************************************')
-    # 找出文本内容包含'我常去的小组'的所有h2标签
-    groups_h2 = soup.find_all('h2',string=re.compile('我常去的小组'))[0]
-    # 找到其后所有的兄弟dl节点
-    dl_siblings = groups_h2.find_next_siblings()
-    dd = dl_siblings.dd
-    a = dd.a
-    group = a.string.strip()[:-1]
-    groups.append(group)
-    print('groups : ' + groups + '\n\n********************************************************')
+# 保存数据到excel
+def save_data_to_excel(list):
+    write_excel.write_excel_row(list)
 
 
 urls = []
 
-# 抓取并解析100个用户数据，保存
-for m in range(59798134, 59798235):
+# 随机抓取并解析1000个用户数据，保存
+for m in range(59798134, 59798135):
     url = PEOPLE_URL + str(m)
     urls.append(url)
 
 
 # 程序入口
 if __name__ == "__main__":
-    pool = ThreadPool(1)
+    # 模拟登陆
     login(LOGIN_URL,user['username'],user['password'])
-    try:
-        results = pool.map(get_source, urls)
-    except Exception as e:
-        print(e)
-
-    pool.close()
-    pool.join()
+    # 爬取数据
+    group_list = do_spider()
+    # 保存数据
+    save_data_to_excel(group_list)
