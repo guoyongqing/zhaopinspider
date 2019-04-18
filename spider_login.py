@@ -16,6 +16,12 @@ LOGIN_URL = 'https://accounts.douban.com/j/mobile/login/basic'
 PEOPLE_URL = 'https://www.douban.com/people/'
 
 
+user = {
+    'username':'13262953685',
+    'password':'shadeless.1990'
+}
+
+
 # 日期转换成毫秒
 def datetime_to_timestamp_in_milliseconds(d):
     def current_milli_time(): return int(round(time.time() * 1000))
@@ -125,7 +131,7 @@ for m in range(59798134, 59798145):
 
 if __name__ == "__main__":
     pool = ThreadPool(1)
-    login(LOGIN_URL,'13262953685','shadeless.1990')
+    login(LOGIN_URL,user['username'],user['password'])
     try:
         results = pool.map(get_source, urls)
     except Exception as e:
