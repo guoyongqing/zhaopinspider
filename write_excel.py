@@ -41,6 +41,6 @@ def write_excel_row(groups):
                 sheet.write(index, b, row[b], set_style('Times New Roman', 220, False))
             index += 1
         # 合并单元格
-        sheet.write_merge(index - m, index - 1, 0, 0, 'My merge', set_style('Times New Roman', 220, False)) # 合并id
-        sheet.write_merge(index - m, index - 1, 1, 1, 'My merge', set_style('Times New Roman', 220, False)) # 合并昵称
+        sheet.write_merge(index - m, index - 1, 0, 0, rows[0][0], set_style('Times New Roman', 220, False)) # 合并id
+        sheet.write_merge(index - m, index - 1, 1, 1, rows[0][1], set_style('Times New Roman', 220, False)) # 合并昵称
     f.save('data.xls')

@@ -60,9 +60,7 @@ query_head = {
 
 # 代理（免费代理：http://www.goubanjia.com/）
 proxies = {
-    'http': '182.52.238.52:50619',
-    'http': '95.31.197.77:41651',
-    'http': '119.180.179.71:8060',
+    'http': '182.52.132.44:57216',
 }
 
 
@@ -92,34 +90,43 @@ def do_spider():
         url = urls[index]
         # 模拟等待延时
         time.sleep(np.random.rand() * 5)
-        try:
-            r = requests \
-                .session() \
-                .get(url,
-                     headers=query_head,
-                     proxies=proxies,
-                     timeout=30
-                     ) \
-                .text
-        except:
-            continue
+
+        # try:
+        #     r = requests \
+        #         .session() \
+        #         .get(url,
+        #              headers=query_head,
+        #              proxies=proxies,
+        #              timeout=30
+        #              ) \
+        #         .text
+        # except:
+        #     continue
+
+        r = load_test_data('test.txt')
 
         # 一条用户信息
-        userid = url[-8]
+        userid = url[-8:]
         groups = []
         soup = BeautifulSoup(r, 'lxml')
         print(soup.prettify() + '\n\n********************************************************')
         # 找出文本内容包含'我常去的小组'的所有h2标签
         groups_h2 = soup.find('h2', string=re.compile('常去的小组'))
+        # print('groups_h2 : ' + groups_h2.tring)
         try_times += 1
-        if groups_h2 == None and try_times < 10:
-            continue
-        elif groups_h2 == None or len(groups_h2) <= 1:
-            break
+        # if groups_h2 is None and try_times < 10:
+        #     continue
+        # elif groups_h2 is None or len(groups_h2) <= 1:
+        #     break
 
-        nickname = soup.title.string
+        nickname = soup.title.string.strip('\n')
         # 找到其后所有的兄弟dl节点
         dl_siblings = groups_h2.find_next_siblings()
+        for sib in dl_siblings:
+            if sib.name == 'dl':
+                print('')
+            else:
+                dl_siblings.remove(sib)
         for dl in dl_siblings:
             dd = dl.dd
             a = dd.a
@@ -127,7 +134,7 @@ def do_spider():
             link = a.get('href')
             group = [userid, nickname, groupname, link]
             groups.append(group)
-        print('groups : ' + groups + '\n\n********************************************************')
+        # print('groups : ' + groups + '\n\n********************************************************')
         index += 1
         list.append(groups)
     return list
@@ -141,15 +148,15 @@ def save_data_to_excel(list):
 urls = []
 
 # 随机抓取并解析1000个用户数据，保存
-for m in range(59798134, 59798135):
+for m in range(80000001, 80000002):
     url = PEOPLE_URL + str(m)
     urls.append(url)
 
 
 # 程序入口
 if __name__ == "__main__":
-    # 模拟登陆
-    login(LOGIN_URL,user['username'],user['password'])
+    # # 模拟登陆
+    # login(LOGIN_URL,user['username'],user['password'])
     # 爬取数据
     group_list = do_spider()
     # 保存数据
